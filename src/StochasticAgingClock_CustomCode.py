@@ -2444,19 +2444,17 @@ plt.close()
 
 
 
-
-
 '''
 Supplement Figure 3
 '''
 size = 2000
 ground = np.random.randint(0,1000, size=size)/1000
-samples, ages = random_epi(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.05, 
-                                   age_steps = 100)
+samples, ages = random_epi(ground,
+                                    samples_per_age = 3,
+                                    epi_sites = size,
+                                    noise_ground = 0.01,
+                                    noise_age = 0.05,
+                                    age_steps = 100)
 ##sup3A
 scatter_size=1
 xlab='Ground state values'
@@ -2506,13 +2504,13 @@ dat = dat.dropna()
 dat = dat[meta.index]
 dat = dat.T
 dat = dat.join(meta)
-dat = dat.sort_values(by='Age') 
+dat = dat.sort_values(by='Age')
 blood = dat.iloc[:,:-2].T
 
 o=f'Sup3c_Bio_Young_Old'
 xlab='Young DNAm sample'
 ylab='Old DNAm sample'
-young16y = 'GSM1007467' 
+young16y = 'GSM1007467'
 old88y = 'GSM1007832'
 tick_step=0.25
 sns.set(font='Times New Roman', style='white')
@@ -2528,192 +2526,176 @@ plt.tight_layout(pad=0.5)
 plt.savefig(f'{plot_path}{o}_fontsize{fontsize}_height{height}{filetype}')
 plt.close()
 
-#Sup3d
-young16y = 'GSM1007467' 
-young17y = 'GSM1007336'
-blood = blood[[young16y, young17y]] 
-blood['Diff'] = blood.loc[:,young17y] - blood.loc[:,young16y]
-ax=blood[[young16y]].plot.hist(bins=100, figsize=(height,height))
-plt.vlines(x = 0, ymin=0, ymax=3000, color='black')
-plt.vlines(x = blood[[young16y]].quantile(q=0.2).values[0], ymin=0, ymax=3000, color='black')
-plt.vlines(x = blood[[young16y]].quantile(q=0.4).values[0], ymin=0, ymax=3000, color='black')
-plt.vlines(x = blood[[young16y]].quantile(q=0.6).values[0], ymin=0, ymax=3000, color='black')
-plt.vlines(x = blood[[young16y]].quantile(q=0.8).values[0], ymin=0, ymax=3000, color='black')
-plt.vlines(x =1, ymin=0, ymax=3000, color='black')
-plt.xlabel('Ground state', fontsize=fontsize)
-plt.ylabel('Frequency', fontsize=fontsize)
-ax.set_xticklabels([round(x,2) for x in ax.get_xticks()], fontsize=fontsize)
-ax.set_yticklabels([int(x) for x in ax.get_yticks()], fontsize=fontsize)
-plt.legend('')
-plt.tight_layout()
-plt.savefig(f'{plot_path}Sup3d_Quantiles_dist.pdf')
+
+
+#sup3d
+Em = 0.999
+cell_num = 1000
+samples, ages = simulate_cells_for_age_fixed(ground, Em, samples_per_age=3, age_steps=100, cell_num=cell_num)
+
+o=f'Sup3d_SingleCell_Fixed_Em{Em}'
+xlab='Ground state values'
+ylab = 'Ground state values +\n100x single-cell noise (fixed)'
+tick_step=0.25
+sns.set(font='Times New Roman', style='white')
+g=sns.jointplot(x=ground, y=samples[-1], kind='scatter', height=height, s=4, color=dot_color)
+g.set_axis_labels(xlab, ylab, fontsize=fontsize)
+loc = plticker.MultipleLocator(base=tick_step)
+g.ax_joint.xaxis.set_major_locator(loc)
+g.ax_joint.yaxis.set_major_locator(loc)
+g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
+g.ax_joint.set_yticklabels(g.ax_joint.get_yticks(), fontsize=fontsize)
+plt.savefig(f'{plot_path}{o}_Em{Em}_100xNoise_fontsize{fontsize}_height{height}{filetype}')
 plt.close()
+
+
+
 
 #Sup3e
-ax = sns.jointplot(x=young16y, y='Diff', data=blood, height=height,s=4, color='grey')
-ax.ax_joint.set_xlabel('Ground state: Young 16y', fontsize=fontsize)
-ax.ax_joint.set_ylabel('Young 17y - Young 16y', fontsize=fontsize)
-loc = plticker.MultipleLocator(base=0.5)
-ax.ax_joint.xaxis.set_major_locator(loc)
-ax.ax_joint.yaxis.set_major_locator(loc)
-ax.ax_joint.set_xticklabels(ax.ax_joint.get_xticks(), fontsize=fontsize)
-ax.ax_joint.set_yticklabels(ax.ax_joint.get_yticks(), fontsize=fontsize)
-plt.tight_layout()
-plt.savefig(f'{plot_path}Sup3e_Young_diff.pdf')
-plt.close()
+xlab = 'Simulated age'
+ylab = 'Predicted age'
+ground_size = 2000
+cell_num = 100
+Em=0.99
+o=f'Sup3e_All_0.5_groundsize{ground_size}'
+ground = [0.5]*ground_size
+Em = 0.999
+samples, ages = simulate_cells_for_age_fixed(ground, Em, samples_per_age=3, age_steps=100, cell_num=cell_num, deviate_ground=False)
+samples_2, ages_2 = simulate_cells_for_age_fixed(ground, Em, samples_per_age=3, age_steps=100, cell_num=cell_num, deviate_ground=False)
+
+regr, stats = pred_and_plot(samples=samples,
+                                    ages=ages,
+                                    samples2=samples_2,
+                                    ages2=ages_2,
+                                    outname=f'{plot_path}{o}',
+                                    xlab=xlab,
+                                    ylab=ylab,
+                                    fontsize=fontsize,
+                                    height=height,
+                                    tick_step=25, savepic=True)
 
 #Sup3f
-young16y = 'GSM1007467' 
-young17y = 'GSM1007336'
-young_blood = blood[[young16y, young17y]]
-noise_age_df = get_noise_func_parm(young_blood, start_ind=0, end_ind=1, step=5,
-                                   normalize='None')  
+### Just a slight deviation to 0.51 allows for a prediction
+o=f'Sup3f_All_0.51_groundsize{ground_size}'
+ground = [0.51]*ground_size
+Em = 0.99
+samples, ages = simulate_cells_for_age_fixed(ground, Em, samples_per_age=3, age_steps=100, cell_num=cell_num, deviate_ground=False)
+samples_2, ages_2 = simulate_cells_for_age_fixed(ground, Em, samples_per_age=3, age_steps=100, cell_num=cell_num, deviate_ground=False)
 
-df = pd.DataFrame()
-for i in range(5):
-    q1 = noise_age_df['Q1'][i]
-    q2 = noise_age_df['Q2'][i]
-    print(i, q1,q2)
-    if q1 == 0:
-        # generate noise based on the parameters estimated by get_noise_func_parm()
-        r1 = scipy.stats.lognorm.rvs(size=2000,
-                                     scale=noise_age_df['Param'][i]['lognorm']['scale'],
-                                     loc=noise_age_df['Param'][i]['lognorm']['loc'],
-                                     s=noise_age_df['Param'][i]['lognorm']['s'])
-    else:
-        r1 = scipy.stats.lognorm.rvs(size=2000,
-                                     scale=noise_age_df['Param'][i]['lognorm']['scale'],
-                                     loc=noise_age_df['Param'][i]['lognorm']['loc'],
-                                     s=noise_age_df['Param'][i]['lognorm']['s'])
-    df[f'Quantile {i+1}'] = r1
-fig, ax = plt.subplots(1, 1, figsize=(height,height))
-for s in df.columns:
-    df[s].plot(kind='density')
-fig.show()
-plt.legend(fontsize=6)
-plt.xlim(-0.15, 0.15)
+regr, stats = pred_and_plot(samples=samples,
+                                    ages=ages,
+                                    samples2=samples_2,
+                                    ages2=ages_2,
+                                    outname=f'{plot_path}{o}',
+                                    xlab=xlab,
+                                    ylab=ylab,
+                                    fontsize=fontsize,
+                                    height=height,
+                                    tick_step=25, savepic=True)
 
-ax.set_xlabel('Noise values', fontsize=fontsize)
-ax.set_ylabel('Density', fontsize=fontsize)
-loc = plticker.MultipleLocator(base=0.1)
-ax.xaxis.set_major_locator(loc)
-ax.set_xticklabels([round(tt,2) for tt in ax.get_xticks()], fontsize=fontsize)
-ax.set_yticklabels([int(tt) for tt in ax.get_yticks()], fontsize=fontsize)
-plt.tight_layout(pad=0.5)
-plt.savefig(f'{plot_path}Sup3f_Quantile_Noise_Dists.pdf')
+#Sup3g
+
+young16y = 'GSM1007467'
+meta = pd.read_csv(f'{input_path}GSE41037_meta.csv', index_col=0, sep='\t')
+meta = meta.T
+meta = meta[meta['!Sample_source_name_ch1'].str.contains('control')]
+meta.columns = ['Name', 'Gender', 'Age', 'Disease']
+meta.Age = meta.Age.astype(int)
+meta = meta[['Gender', 'Age']]
+dat = pd.read_csv(f'{input_path}GSE41037.csv', sep='\t', index_col=0)
+dat = dat.iloc[:-1]
+dat = dat.dropna()
+dat = dat[meta.index]
+dat = dat.T
+dat = dat.join(meta)
+dat = dat.sort_values(by='Age')
+blood = dat.iloc[:,:-2].T
+ground_size = 2000
+ground_sites = np.random.choice(blood[young16y].index, replace=False, size=ground_size)
+ground_sites = np.sort(ground_sites)
+ground = blood[blood.index.isin(ground_sites)].loc[:,young16y].values
+Em_lim=0.95
+Ed_lim=0.23
+ground = [0.5]*ground_size
+o=f'Sup3g_All_0.5_empiricalEm_groundsize{ground_size}'
+Em_df_new = get_noise_Em_all_new(blood, old88y, Em_lim=Em_lim, Ed_lim=Ed_lim)
+Em_df_new = Em_df_new[Em_df_new.Site.isin(ground_sites)]
+samples_emp_noquantile, ages_emp_noquantile = simulate_for_age_empirical_noquantile(ground, Em_df_new, samples_per_age=3, age_steps=100, cell_num=cell_num, deviate_ground=False)
+samples_emp_noquantile_2, ages_emp_noquantile_2 = simulate_for_age_empirical_noquantile(ground, Em_df_new, samples_per_age=3, age_steps=100, cell_num=cell_num, deviate_ground=False)
+regr, stats = pred_and_plot(samples=samples_emp_noquantile,
+                                    ages=ages_emp_noquantile,
+                                    samples2=samples_emp_noquantile_2,
+                                    ages2=ages_emp_noquantile_2,
+                                    outname=f'{plot_path}{o}',
+                                    xlab=xlab,
+                                    ylab=ylab,
+                                    fontsize=fontsize,
+                                    height=height,
+                                    tick_step=25, savepic=True)
+#Sup3h
+o=f'Sup3h_SingleCell_EmpiricalEm_Ed'
+old88 = 'GSM1007832'
+Em_lim=0.95
+Ed_lim=0.23
+ground_size = 2000
+ground_sites = np.random.choice(blood[young16y].index, replace=False, size=ground_size)
+ground_sites = np.sort(ground_sites)
+ground = blood[blood.index.isin(ground_sites)].loc[:,young16y].values
+Em_df_new = get_noise_Em_all_new(blood, old88, Em_lim=Em_lim, Ed_lim=Ed_lim)
+Em_df_new = Em_df_new[Em_df_new.Site.isin(ground_sites)]
+samples_emp_noquantile, ages_emp_noquantile = simulate_for_age_empirical_noquantile(ground, Em_df_new, samples_per_age=3, age_steps=100)
+scatter_size=1
+xlab='Ground state values'
+ylab = 'Ground state values +\n100x single-cell noise (empirical)'
+tick_step=0.25
+sns.set(font='Times New Roman', style='white')
+g=sns.jointplot(x=ground, y=samples_emp_noquantile[-1], height=height, kind='scatter',s=4, color=dot_color)
+g.set_axis_labels(xlab, ylab, fontsize=fontsize)
+loc = plticker.MultipleLocator(base=tick_step)
+g.ax_joint.xaxis.set_major_locator(loc)
+g.ax_joint.yaxis.set_major_locator(loc)
+g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
+g.ax_joint.set_yticklabels(g.ax_joint.get_yticks(), fontsize=fontsize)
+plt.savefig(f'{plot_path}{o}_100xNoise_fontsize{fontsize}_height{height}{filetype}')
 plt.close()
 
 
-# sup 3g-i
-young16y = 'GSM1007467' 
-young17y = 'GSM1007336'
-young_blood = blood[[young16y, young17y]]
-# compute the amount of noise for one age step, i.e from 16 to 17
-stats_dict = {}
-stats_dict['Quant'] = []
-stats_dict['Pearson r'] = []
-stats_dict['Pearson p'] = []
-stats_dict['Spearman r'] = []
-stats_dict['Spearman p'] = []
-stats_dict['R2'] = []
-for step in [5,10,15,20]:
-    noise_age_df = get_noise_func_parm(young_blood, start_ind=0, end_ind=1, step=step, normalize='None')
-    for _ in range(3):
-        ground = np.random.choice(young_blood.iloc[:,0].values, replace=False, size=2000) 
-        
-        samples, ages = random_epi_biol_age(ground = ground, 
-                                            noise_ground_df = noise_age_df, 
-                                            noise_age_df = noise_age_df, 
-                                            samples_per_age = 3, 
-                                            epi_sites = len(ground), 
-                                            age_end = 100, 
-                                            age_start=0, noise_norm=1)
-        
-        samples_2, ages_2 = random_epi_biol_age(ground = ground, 
-                                            noise_ground_df = noise_age_df, 
-                                            noise_age_df = noise_age_df, 
-                                            samples_per_age = 3, 
-                                            epi_sites = len(ground), 
-                                            age_end = 100, 
-                                            age_start=0, noise_norm=1)
-        
-        o=f'Sup3i_BioData_Quant{step}_None_cv'
-        scatter_size=1
-        xlab='Ground state values'
-        ylab='Ground state values + 100x empirical noise'
-        tick_step=0.25
-        sns.set(font='Times New Roman', style='white')
-        g=sns.jointplot(x=ground, y=samples[-1], height=height, kind='scatter',s=4, color=dot_color)
-        
-        g.set_axis_labels(xlab, ylab, fontsize=fontsize)
-        loc = plticker.MultipleLocator(base=tick_step)
-        g.ax_joint.xaxis.set_major_locator(loc)
-        g.ax_joint.yaxis.set_major_locator(loc)
-        g.ax_joint.plot([0,1], [0,1], ':k')
-        g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
-        g.ax_joint.set_yticklabels(g.ax_joint.get_yticks(), fontsize=fontsize)
-        plt.tight_layout(pad=0.5)
-        plt.savefig(f'{plot_path}{o}_Sample100EmpiricalNoise_fontsize{fontsize}_height{height}{filetype}')
-        plt.close()
-        
-        scatter_size=1
-        xlab='Ground state values'
-        ylab='Ground state values + 1x empirical noise'
-        tick_step=0.25
-        sns.set(font='Times New Roman', style='white')
-        g=sns.jointplot(x=ground, y=samples[0], height=height, kind='scatter',s=4, color=dot_color)
-        
-        g.set_axis_labels(xlab, ylab, fontsize=fontsize)
-        loc = plticker.MultipleLocator(base=tick_step)
-        g.ax_joint.xaxis.set_major_locator(loc)
-        g.ax_joint.yaxis.set_major_locator(loc)
-        g.ax_joint.plot([0,1], [0,1], ':k')
-        g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
-        g.ax_joint.set_yticklabels(g.ax_joint.get_yticks(), fontsize=fontsize)
-        plt.tight_layout(pad=0.5)
-        plt.savefig(f'{plot_path}{o}_Sample1EmpiricalNoise_fontsize{fontsize}_height{height}{filetype}')
-        plt.close()
-        
-     
-        xlab = 'Simulated age'
-        ylab = 'Predicted age'
-        o=f'Sup3h_BioData_Quant{step}_None_cv'
-        
-        
-        regr, stats = pred_and_plot(samples=samples, 
-                                           ages=ages, 
-                                           samples2=samples_2, 
-                                           ages2=ages_2, 
-                                           outname=f'{plot_path}{o}',
-                                           xlab=xlab,
-                                           ylab=ylab, 
-                                           fontsize=fontsize, 
-                                           height=height, 
-                                           tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
-        
-        stats_dict['Quant'].append(step)
-        stats_dict['Pearson r'].append(stats[0][0])
-        stats_dict['Pearson p'].append(stats[0][1])
-        stats_dict['Spearman r'].append(stats[1][0])
-        stats_dict['Spearman p'].append(stats[1][1])
-        stats_dict['R2'].append(stats[2])
+#Sup3i
+young16y = 'GSM1007467'
+old88 = 'GSM1007832'
+size=2000
+cell_num = 1000
+ground_sites = np.random.choice(blood[young16y].index, replace=False, size=size)
+ground_sites = np.sort(ground_sites)
+ground = blood[blood.index.isin(ground_sites)].loc[:,young16y].values
+
+o=f'Sup3i_SingleCell_EmpiricalEm_Ed'
+Em_lim=0.95
+Ed_lim=0.23
+Em_df_new = get_noise_Em_all_new(blood, old88, Em_lim=Em_lim, Ed_lim=Ed_lim)
+Em_df_new = Em_df_new[Em_df_new.Site.isin(ground_sites)]
+samples, ages = simulate_for_age_empirical_noquantile(ground, Em_df_new, samples_per_age=3, age_steps=100)
 
 
+regr = ElasticNetCV(random_state=0, max_iter=1000, l1_ratio=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], n_jobs=n_jobs)
+regr.fit(samples, ages)
 
-stats_df = pd.DataFrame(stats_dict)
-
-fig = plt.figure(figsize=(height,height))
-ax=sns.swarmplot(x='Quant', y='R2', data=stats_df, color='black', s=2)
-ax=sns.boxplot(x='Quant', y='R2', data=stats_df, color='white')
-ax.set_xlabel('Number of quantiles',fontsize=fontsize)
-ax.set_ylabel('R2', fontsize=fontsize)
-ax.set_xticklabels([5,10,15,20], fontsize=fontsize)
-ax.set_ylim(0,1)
-ax.set_yticklabels([0.0,0.25,0.5,0.75,1.0], fontsize=fontsize)
-plt.xticks(rotation=60)
-plt.tight_layout(pad=1)
-plt.savefig(f'{plot_path}Sup3g_Quant_vs_R2.pdf')
+xlab='Ground state values'
+ylab='Elastic net regression coefficients'
+sns.set(font='Times New Roman', style='white')
+g = sns.jointplot(x=ground, y=regr.coef_, kind='reg', height=height, scatter_kws={'s':1}, color=dot_color, joint_kws={'line_kws':{'color':line_color}})
+g.set_axis_labels(xlab, ylab, fontsize=fontsize)
+loc_x = plticker.MultipleLocator(base=0.25)
+loc_y = plticker.MultipleLocator(base=5)
+g.ax_joint.xaxis.set_major_locator(loc_x)
+g.ax_joint.yaxis.set_major_locator(loc_y)
+g.ax_joint.set_yticklabels([int(tt) for tt in g.ax_joint.get_yticks()], fontsize=fontsize)
+g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
+plt.tight_layout()
+plt.savefig(f'{plot_path}{o}_RegressionToTheMean_fontsize{fontsize}_height{height}{filetype}')
 plt.close()
+
+
 
 
 '''
