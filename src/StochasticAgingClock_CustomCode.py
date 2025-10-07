@@ -685,75 +685,17 @@ loc='upper right')
 #################################################################################################################33
 #################################################################################################################33
 
+
 '''
 Figure 1
 '''
-##1C
-# Data without limit
+
+#######
+# LOGIT Figure 1
+
+##Figure 1B and C
 size = 2000
 ground = np.random.randint(0,1000, size=size)/1000
-samples, ages = random_epi_nolimit(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.05, 
-                                   age_steps = 100)
-
-
-samples_2, ages_2 = random_epi_nolimit(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.05, 
-                                   age_steps = 100)
-o=f'1c_random_clock_nolimit'
-regr, stats = pred_and_plot(samples=samples, 
-                                   ages=ages, 
-                                   samples2=samples_2, 
-                                   ages2=ages_2, 
-                                   outname=f'{plot_path}{o}',
-                                   xlab=xlab,
-                                   ylab=ylab, 
-                                   fontsize=fontsize, 
-                                   height=height, 
-                                   tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
-
-
-
-##1D
-# Limit between 0 and 1 with gaussian noise
-size = 2000
-ground = np.random.randint(0,1000, size=size)/1000
-samples, ages = random_epi(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.05, 
-                                   age_steps = 100)
-
-
-samples_2, ages_2 = random_epi(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.05, 
-                                   age_steps = 100)
-o=f'1c_random_clock_withlimit'
-regr, stats = pred_and_plot(samples=samples, 
-                                   ages=ages, 
-                                   samples2=samples_2, 
-                                   ages2=ages_2, 
-                                   outname=f'{plot_path}{o}',
-                                   xlab=xlab,
-                                   ylab=ylab, 
-                                   fontsize=fontsize, 
-                                   height=height, 
-                                   tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
-
-
-
-
-##1E
 stats_dict = {}
 stats_dict['Noise_Age'] = []
 stats_dict['Pearson'] = []
@@ -761,76 +703,74 @@ stats_dict['Spearman'] = []
 stats_dict['R2'] = []
 stats_dict['MAD'] = []
 size = 2000
-for noise_age in [0.005,0.0075, 0.01,0.025,0.05, 0.075,0.1]:
+noise_age_list = [0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2,0.3,0.5]
+for noise_age in noise_age_list:
     for _ in range(3):
-        
-        ground = np.random.randint(0,1000, size=size)/1000
-        samples, ages = random_epi(ground, 
-                                           samples_per_age = 3, 
-                                           epi_sites = size, 
-                                           noise_ground = 0.01,
-                                           noise_age = noise_age, 
-                                           age_steps = 100)
-        
-        
-        samples_2, ages_2 = random_epi(ground, 
-                                           samples_per_age = 3, 
-                                           epi_sites = size, 
-                                           noise_ground = 0.01,
-                                           noise_age = noise_age, 
-                                           age_steps = 100)
+        ground = np.random.randint(0, 1000, size=size) / 1000
+        samples, ages = random_epi_logit(ground,
+                                   samples_per_age=3,
+                                   epi_sites=size,
+                                   noise_ground=0.01,
+                                   noise_age=noise_age,
+                                   age_steps=100)
 
-        o=f'1e_random_clock_withlimit_{noise_age}'
-        regr, stats = pred_and_plot(samples=samples, 
-                                           ages=ages, 
-                                           samples2=samples_2, 
-                                           ages2=ages_2, 
-                                           outname=f'{plot_path}{o}',
-                                           xlab=xlab,
-                                           ylab=ylab, 
-                                           fontsize=fontsize, 
-                                           height=height, 
-                                           tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
+        samples_2, ages_2 = random_epi_logit(ground,
+                                       samples_per_age=3,
+                                       epi_sites=size,
+                                       noise_ground=0.01,
+                                       noise_age=noise_age,
+                                       age_steps=100)
+
+        o = f'1e_random_clock_withlimit_{noise_age}_LOGIT'
+        regr, stats = pred_and_plot(samples=samples,
+                                    ages=ages,
+                                    samples2=samples_2,
+                                    ages2=ages_2,
+                                    outname=f'{plot_path}{o}',
+                                    xlab=xlab,
+                                    ylab=ylab,
+                                    fontsize=fontsize,
+                                    height=height,
+                                    tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
         stats_dict['Noise_Age'].append(noise_age)
         stats_dict['Pearson'].append(stats[0])
         stats_dict['Spearman'].append(stats[1])
         stats_dict['R2'].append(stats[2])
         stats_dict['MAD'].append(stats[3])
-        
 
 stats_df = pd.DataFrame(stats_dict)
-fig = plt.figure(figsize=(height,height))
-g=sns.swarmplot(x='Noise_Age', y='R2', data=stats_df, color='black', s=2)
-g=sns.boxplot(x='Noise_Age', y='R2', data=stats_df, color='white')
-g.set_xlabel('Noise',fontsize=fontsize)
+fig = plt.figure(figsize=(height, height))
+g = sns.swarmplot(x='Noise_Age', y='R2', data=stats_df, color='black', s=2)
+g = sns.boxplot(x='Noise_Age', y='R2', data=stats_df, color='white')
+g.set_xlabel('Noise', fontsize=fontsize)
 g.set_ylabel('R2', fontsize=fontsize)
-g.set_ylim(0,1)
+g.set_ylim(0, 1)
 loc = plticker.MultipleLocator(base=0.2)
 g.yaxis.set_major_locator(loc)
-g.set_yticklabels([round(tt,3) for tt in g.get_yticks()], fontsize=fontsize)
-g.set_xticklabels([0.005,0.0075, 0.01,0.025,0.05, 0.075,0.1], fontsize=fontsize)
+g.set_yticklabels([round(tt, 3) for tt in g.get_yticks()], fontsize=fontsize)
+g.set_xticklabels(noise_age_list, fontsize=fontsize)
 g.set_xlabel('Noise standard deviation')
 plt.xticks(rotation=60)
 plt.tight_layout()
-plt.savefig(f'{plot_path}1e_random_clock_withlimit_noiseage_comp.pdf')
+plt.savefig(f'{plot_path}1e_random_clock_withlimit_noiseage_comp_LOGIT.pdf')
 plt.close()
 
 
 
-##1F
-samples, ages = random_epi(ground, 
+##Sup1D
+samples, ages = random_epi_logit(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
-                                   noise_age = 0.05, 
+                                   noise_age = 0.2, 
                                    age_steps = 100)
 
 
-samples_2, ages_2 = random_epi(ground, 
+samples_2, ages_2 = random_epi_logit(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
-                                   noise_age = 0.05, 
+                                   noise_age = 0.2, 
                                    age_steps = 100)
 
 regr_2, stats = pred_and_plot(samples=samples, 
@@ -860,11 +800,11 @@ else:
     g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
     g.ax_joint.set_yticklabels(g.ax_joint.get_yticks(), fontsize=fontsize)
 plt.tight_layout()
-plt.savefig(f'{plot_path}1f_random_clock_withlimit_reproducible.pdf')
+plt.savefig(f'{plot_path}1f_random_clock_withlimit_reproducible_LOGIT.pdf')
 plt.close()
 
 
-##1G
+## Sup 1E
 # Regression to the mean
 tick_step=0.5
 xlab='Ground state values'
@@ -883,10 +823,10 @@ else:
     g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
     g.ax_joint.set_yticklabels(g.ax_joint.get_yticks(), fontsize=fontsize)
 plt.tight_layout()
-plt.savefig(f'{plot_path}1g_random_clock_withlimit_RegressionToTheMean.pdf')
+plt.savefig(f'{plot_path}1g_random_clock_withlimit_RegressionToTheMean_LOGIT.pdf')
 plt.close()
 
-##1H
+##1F
 stats_dict = {}
 stats_dict['Size'] = []
 stats_dict['Pearson'] = []
@@ -897,13 +837,13 @@ stats_dict['alpha'] = []
 stats_dict['l1'] = []
 s = 0
 e = 1000
-for size in [pow(2, i) for i in range(12)]:
+for size in [pow(2, i) for i in range(14)]:
     r = 3
     for _ in range(r):
         ground = np.random.randint(s, e, size=size) / 1000
 
-        samples, ages = random_epi(ground, epi_sites=size)
-        samples_2, ages_2 = random_epi(ground, epi_sites=size)
+        samples, ages = random_epi_logit(ground, epi_sites=size)
+        samples_2, ages_2 = random_epi_logit(ground, epi_sites=size)
 
         o = f'ground_{s}_{e}_{size}'
         regr, stats = pred_and_plot(samples=samples, ages=ages,
@@ -919,54 +859,59 @@ for size in [pow(2, i) for i in range(12)]:
         stats_dict['l1'].append(regr.l1_ratio_)
 
     
+
 stats_df = pd.DataFrame(stats_dict)
-fig = plt.figure(figsize=(height,height))
-ax=sns.swarmplot(x='Size', y='R2', data=stats_df, color='black', s=2)
-ax=sns.boxplot(x='Size', y='R2', data=stats_df, color='white')
-ax.set_xlabel('Feature Size',fontsize=fontsize)
+fig = plt.figure(figsize=(height, height))
+ax = sns.swarmplot(x='Size', y='R2', data=stats_df, color='black', s=2)
+ax = sns.boxplot(x='Size', y='R2', data=stats_df, color='white')
+ax.set_xlabel('Feature Size', fontsize=fontsize)
 ax.set_ylabel('R2', fontsize=fontsize)
 plt.xticks(rotation=60)
+plt.ylim(0,1.1)
+ax.set_yticklabels([0,0.5,1], fontsize=fontsize)
+ax.set_xticklabels([pow(2, i) for i in range(14)], fontsize=fontsize)
 plt.tight_layout(pad=1)
-plt.savefig(f'{plot_path}1h_random_clock_withlimit_FeatureSizeComp.pdf')
+plt.savefig(f'{plot_path}1h_random_clock_withlimit_FeatureSizeComp_LOGIT.pdf')
 plt.close()
 
 
-##1I
+
+##1G
 size = 2000
 ground = np.random.randint(0,1000, size=size)/1000
-samples, ages = random_epi(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.05, 
-                                   age_steps = 100)
-
-
-samples_2, ages_2 = random_epi(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.05, 
-                                   age_steps = 100)
-
-samples_3, ages_2 = random_epi(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.1, 
-                                   age_steps = 100)
-
-samples_4, ages_2 = random_epi(ground, 
+samples, ages = random_epi_logit(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
                                    noise_age = 0.2, 
                                    age_steps = 100)
-samples_5, ages_2 = random_epi(ground, 
+
+
+samples_2, ages_2 = random_epi_logit(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
-                                   noise_age = 0.025, 
+                                   noise_age = 0.2, 
+                                   age_steps = 100)
+
+samples_3, ages_2 = random_epi_logit(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.4, 
+                                   age_steps = 100)
+
+samples_4, ages_2 = random_epi_logit(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.8, 
+                                   age_steps = 100)
+samples_5, ages_2 = random_epi_logit(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.1, 
                                    age_steps = 100)
 
 xlab = 'Simulated age'
@@ -994,22 +939,23 @@ df = df.melt(id_vars=['True # of noise cycles'])
 sns.set(font='Times New Roman', style='white')
 fig = plt.figure(figsize=(height, height))
 g=sns.swarmplot(x='True # of noise cycles', y='value', hue='variable', data=df, s=1, palette='colorblind')
+plt.ylim(0,250)
 loc = plticker.MultipleLocator(base=10)
-plt.ylim(0,160)
+locy = plticker.MultipleLocator(base=50)
 g.xaxis.set_major_locator(loc)
+g.yaxis.set_major_locator(locy)
 g.set_xlabel(xlab, fontsize=fontsize)
 g.set_ylabel(ylab, fontsize=fontsize)
-plt.text(60, 30, 'N(0,0.025)' ,fontsize=fontsize)
-plt.text(60, 85, 'N(0,0.05)' ,fontsize=fontsize)
-plt.text(60, 105, 'N(0,0.1)' ,fontsize=fontsize)
-plt.text(60, 145, 'N(0,0.2)' ,fontsize=fontsize)
+plt.text(60, 30, 'N(0,0.1)' ,fontsize=fontsize)
+plt.text(60, 85, 'N(0,0.2)' ,fontsize=fontsize)
+plt.text(60, 150, 'N(0,0.4)' ,fontsize=fontsize)
+plt.text(60, 230, 'N(0,0.8)' ,fontsize=fontsize)
 g.get_legend().remove()
 g.set_xticklabels([int(tt) for tt in g.get_xticks()], fontsize=fontsize)
 g.set_yticklabels([int(tt) for tt in g.get_yticks()], fontsize=fontsize)
 plt.tight_layout(pad=1)
-plt.savefig(f'{plot_path}1i_random_clock_withlimit_NoiseComp.pdf')
+plt.savefig(f'{plot_path}1i_random_clock_withlimit_NoiseComp_LOGIT.pdf')
 plt.close()
-
 
 
 
@@ -1971,13 +1917,72 @@ plt.close()
 '''
 Supplement Figure 1
 '''
-
-#######
-# LOGIT Figure 1
-
-##Sup 1B and C
+##S1C
+# Data without limit
 size = 2000
 ground = np.random.randint(0,1000, size=size)/1000
+samples, ages = random_epi_nolimit(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.05, 
+                                   age_steps = 100)
+
+
+samples_2, ages_2 = random_epi_nolimit(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.05, 
+                                   age_steps = 100)
+o=f'1c_random_clock_nolimit'
+regr, stats = pred_and_plot(samples=samples, 
+                                   ages=ages, 
+                                   samples2=samples_2, 
+                                   ages2=ages_2, 
+                                   outname=f'{plot_path}{o}',
+                                   xlab=xlab,
+                                   ylab=ylab, 
+                                   fontsize=fontsize, 
+                                   height=height, 
+                                   tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
+
+
+
+##S1D
+# Limit between 0 and 1 with gaussian noise
+size = 2000
+ground = np.random.randint(0,1000, size=size)/1000
+samples, ages = random_epi(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.05, 
+                                   age_steps = 100)
+
+
+samples_2, ages_2 = random_epi(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.05, 
+                                   age_steps = 100)
+o=f'1c_random_clock_withlimit'
+regr, stats = pred_and_plot(samples=samples, 
+                                   ages=ages, 
+                                   samples2=samples_2, 
+                                   ages2=ages_2, 
+                                   outname=f'{plot_path}{o}',
+                                   xlab=xlab,
+                                   ylab=ylab, 
+                                   fontsize=fontsize, 
+                                   height=height, 
+                                   tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
+
+
+
+
+##S1E
 stats_dict = {}
 stats_dict['Noise_Age'] = []
 stats_dict['Pearson'] = []
@@ -1985,74 +1990,76 @@ stats_dict['Spearman'] = []
 stats_dict['R2'] = []
 stats_dict['MAD'] = []
 size = 2000
-noise_age_list = [0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2,0.3,0.5]
-for noise_age in noise_age_list:
+for noise_age in [0.005,0.0075, 0.01,0.025,0.05, 0.075,0.1]:
     for _ in range(3):
-        ground = np.random.randint(0, 1000, size=size) / 1000
-        samples, ages = random_epi_logit(ground,
-                                   samples_per_age=3,
-                                   epi_sites=size,
-                                   noise_ground=0.01,
-                                   noise_age=noise_age,
-                                   age_steps=100)
+        
+        ground = np.random.randint(0,1000, size=size)/1000
+        samples, ages = random_epi(ground, 
+                                           samples_per_age = 3, 
+                                           epi_sites = size, 
+                                           noise_ground = 0.01,
+                                           noise_age = noise_age, 
+                                           age_steps = 100)
+        
+        
+        samples_2, ages_2 = random_epi(ground, 
+                                           samples_per_age = 3, 
+                                           epi_sites = size, 
+                                           noise_ground = 0.01,
+                                           noise_age = noise_age, 
+                                           age_steps = 100)
 
-        samples_2, ages_2 = random_epi_logit(ground,
-                                       samples_per_age=3,
-                                       epi_sites=size,
-                                       noise_ground=0.01,
-                                       noise_age=noise_age,
-                                       age_steps=100)
-
-        o = f'1e_random_clock_withlimit_{noise_age}_LOGIT'
-        regr, stats = pred_and_plot(samples=samples,
-                                    ages=ages,
-                                    samples2=samples_2,
-                                    ages2=ages_2,
-                                    outname=f'{plot_path}{o}',
-                                    xlab=xlab,
-                                    ylab=ylab,
-                                    fontsize=fontsize,
-                                    height=height,
-                                    tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
+        o=f'1e_random_clock_withlimit_{noise_age}'
+        regr, stats = pred_and_plot(samples=samples, 
+                                           ages=ages, 
+                                           samples2=samples_2, 
+                                           ages2=ages_2, 
+                                           outname=f'{plot_path}{o}',
+                                           xlab=xlab,
+                                           ylab=ylab, 
+                                           fontsize=fontsize, 
+                                           height=height, 
+                                           tick_step=25, color=dot_color, line_color=line_color, n_jobs=n_jobs)
         stats_dict['Noise_Age'].append(noise_age)
         stats_dict['Pearson'].append(stats[0])
         stats_dict['Spearman'].append(stats[1])
         stats_dict['R2'].append(stats[2])
         stats_dict['MAD'].append(stats[3])
+        
 
 stats_df = pd.DataFrame(stats_dict)
-fig = plt.figure(figsize=(height, height))
-g = sns.swarmplot(x='Noise_Age', y='R2', data=stats_df, color='black', s=2)
-g = sns.boxplot(x='Noise_Age', y='R2', data=stats_df, color='white')
-g.set_xlabel('Noise', fontsize=fontsize)
+fig = plt.figure(figsize=(height,height))
+g=sns.swarmplot(x='Noise_Age', y='R2', data=stats_df, color='black', s=2)
+g=sns.boxplot(x='Noise_Age', y='R2', data=stats_df, color='white')
+g.set_xlabel('Noise',fontsize=fontsize)
 g.set_ylabel('R2', fontsize=fontsize)
-g.set_ylim(0, 1)
+g.set_ylim(0,1)
 loc = plticker.MultipleLocator(base=0.2)
 g.yaxis.set_major_locator(loc)
-g.set_yticklabels([round(tt, 3) for tt in g.get_yticks()], fontsize=fontsize)
-g.set_xticklabels(noise_age_list, fontsize=fontsize)
+g.set_yticklabels([round(tt,3) for tt in g.get_yticks()], fontsize=fontsize)
+g.set_xticklabels([0.005,0.0075, 0.01,0.025,0.05, 0.075,0.1], fontsize=fontsize)
 g.set_xlabel('Noise standard deviation')
 plt.xticks(rotation=60)
 plt.tight_layout()
-plt.savefig(f'{plot_path}1e_random_clock_withlimit_noiseage_comp_LOGIT.pdf')
+plt.savefig(f'{plot_path}1e_random_clock_withlimit_noiseage_comp.pdf')
 plt.close()
 
 
 
-##Sup1D
-samples, ages = random_epi_logit(ground, 
+##S1F
+samples, ages = random_epi(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
-                                   noise_age = 0.2, 
+                                   noise_age = 0.05, 
                                    age_steps = 100)
 
 
-samples_2, ages_2 = random_epi_logit(ground, 
+samples_2, ages_2 = random_epi(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
-                                   noise_age = 0.2, 
+                                   noise_age = 0.05, 
                                    age_steps = 100)
 
 regr_2, stats = pred_and_plot(samples=samples, 
@@ -2082,11 +2089,11 @@ else:
     g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
     g.ax_joint.set_yticklabels(g.ax_joint.get_yticks(), fontsize=fontsize)
 plt.tight_layout()
-plt.savefig(f'{plot_path}1f_random_clock_withlimit_reproducible_LOGIT.pdf')
+plt.savefig(f'{plot_path}1f_random_clock_withlimit_reproducible.pdf')
 plt.close()
 
 
-## Sup 1E
+##S1G
 # Regression to the mean
 tick_step=0.5
 xlab='Ground state values'
@@ -2105,10 +2112,10 @@ else:
     g.ax_joint.set_xticklabels(g.ax_joint.get_xticks(), fontsize=fontsize)
     g.ax_joint.set_yticklabels(g.ax_joint.get_yticks(), fontsize=fontsize)
 plt.tight_layout()
-plt.savefig(f'{plot_path}1g_random_clock_withlimit_RegressionToTheMean_LOGIT.pdf')
+plt.savefig(f'{plot_path}1g_random_clock_withlimit_RegressionToTheMean.pdf')
 plt.close()
 
-##1F
+##S1H
 stats_dict = {}
 stats_dict['Size'] = []
 stats_dict['Pearson'] = []
@@ -2119,13 +2126,13 @@ stats_dict['alpha'] = []
 stats_dict['l1'] = []
 s = 0
 e = 1000
-for size in [pow(2, i) for i in range(14)]:
+for size in [pow(2, i) for i in range(12)]:
     r = 3
     for _ in range(r):
         ground = np.random.randint(s, e, size=size) / 1000
 
-        samples, ages = random_epi_logit(ground, epi_sites=size)
-        samples_2, ages_2 = random_epi_logit(ground, epi_sites=size)
+        samples, ages = random_epi(ground, epi_sites=size)
+        samples_2, ages_2 = random_epi(ground, epi_sites=size)
 
         o = f'ground_{s}_{e}_{size}'
         regr, stats = pred_and_plot(samples=samples, ages=ages,
@@ -2141,59 +2148,54 @@ for size in [pow(2, i) for i in range(14)]:
         stats_dict['l1'].append(regr.l1_ratio_)
 
     
-
 stats_df = pd.DataFrame(stats_dict)
-fig = plt.figure(figsize=(height, height))
-ax = sns.swarmplot(x='Size', y='R2', data=stats_df, color='black', s=2)
-ax = sns.boxplot(x='Size', y='R2', data=stats_df, color='white')
-ax.set_xlabel('Feature Size', fontsize=fontsize)
+fig = plt.figure(figsize=(height,height))
+ax=sns.swarmplot(x='Size', y='R2', data=stats_df, color='black', s=2)
+ax=sns.boxplot(x='Size', y='R2', data=stats_df, color='white')
+ax.set_xlabel('Feature Size',fontsize=fontsize)
 ax.set_ylabel('R2', fontsize=fontsize)
 plt.xticks(rotation=60)
-plt.ylim(0,1.1)
-ax.set_yticklabels([0,0.5,1], fontsize=fontsize)
-ax.set_xticklabels([pow(2, i) for i in range(14)], fontsize=fontsize)
 plt.tight_layout(pad=1)
-plt.savefig(f'{plot_path}1h_random_clock_withlimit_FeatureSizeComp_LOGIT.pdf')
+plt.savefig(f'{plot_path}1h_random_clock_withlimit_FeatureSizeComp.pdf')
 plt.close()
 
 
-
-##1G
+##S1I
 size = 2000
 ground = np.random.randint(0,1000, size=size)/1000
-samples, ages = random_epi_logit(ground, 
+samples, ages = random_epi(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
-                                   noise_age = 0.2, 
+                                   noise_age = 0.05, 
                                    age_steps = 100)
 
 
-samples_2, ages_2 = random_epi_logit(ground, 
+samples_2, ages_2 = random_epi(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
-                                   noise_age = 0.2, 
+                                   noise_age = 0.05, 
                                    age_steps = 100)
 
-samples_3, ages_2 = random_epi_logit(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.4, 
-                                   age_steps = 100)
-
-samples_4, ages_2 = random_epi_logit(ground, 
-                                   samples_per_age = 3, 
-                                   epi_sites = size, 
-                                   noise_ground = 0.01,
-                                   noise_age = 0.8, 
-                                   age_steps = 100)
-samples_5, ages_2 = random_epi_logit(ground, 
+samples_3, ages_2 = random_epi(ground, 
                                    samples_per_age = 3, 
                                    epi_sites = size, 
                                    noise_ground = 0.01,
                                    noise_age = 0.1, 
+                                   age_steps = 100)
+
+samples_4, ages_2 = random_epi(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.2, 
+                                   age_steps = 100)
+samples_5, ages_2 = random_epi(ground, 
+                                   samples_per_age = 3, 
+                                   epi_sites = size, 
+                                   noise_ground = 0.01,
+                                   noise_age = 0.025, 
                                    age_steps = 100)
 
 xlab = 'Simulated age'
@@ -2221,22 +2223,20 @@ df = df.melt(id_vars=['True # of noise cycles'])
 sns.set(font='Times New Roman', style='white')
 fig = plt.figure(figsize=(height, height))
 g=sns.swarmplot(x='True # of noise cycles', y='value', hue='variable', data=df, s=1, palette='colorblind')
-plt.ylim(0,250)
 loc = plticker.MultipleLocator(base=10)
-locy = plticker.MultipleLocator(base=50)
+plt.ylim(0,160)
 g.xaxis.set_major_locator(loc)
-g.yaxis.set_major_locator(locy)
 g.set_xlabel(xlab, fontsize=fontsize)
 g.set_ylabel(ylab, fontsize=fontsize)
-plt.text(60, 30, 'N(0,0.1)' ,fontsize=fontsize)
-plt.text(60, 85, 'N(0,0.2)' ,fontsize=fontsize)
-plt.text(60, 150, 'N(0,0.4)' ,fontsize=fontsize)
-plt.text(60, 230, 'N(0,0.8)' ,fontsize=fontsize)
+plt.text(60, 30, 'N(0,0.025)' ,fontsize=fontsize)
+plt.text(60, 85, 'N(0,0.05)' ,fontsize=fontsize)
+plt.text(60, 105, 'N(0,0.1)' ,fontsize=fontsize)
+plt.text(60, 145, 'N(0,0.2)' ,fontsize=fontsize)
 g.get_legend().remove()
 g.set_xticklabels([int(tt) for tt in g.get_xticks()], fontsize=fontsize)
 g.set_yticklabels([int(tt) for tt in g.get_yticks()], fontsize=fontsize)
 plt.tight_layout(pad=1)
-plt.savefig(f'{plot_path}1i_random_clock_withlimit_NoiseComp_LOGIT.pdf')
+plt.savefig(f'{plot_path}1i_random_clock_withlimit_NoiseComp.pdf')
 plt.close()
 
 
